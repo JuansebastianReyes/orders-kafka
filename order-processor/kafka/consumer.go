@@ -1,18 +1,24 @@
 package kafka
 
 import (
-	"context"
-	"log"
+    "context"
+    "log"
+    "os"
 
-	"github.com/segmentio/kafka-go"
+    "github.com/segmentio/kafka-go"
 )
 
 func ConsumeOrders() {
-	reader := kafka.NewReader(kafka.ReaderConfig{
-		Brokers: []string{"localhost:9092"},
-		Topic:   "orders.created",
-		GroupID: "order-processor-group",
-	})
+    broker := os.Getenv("KAFKA_BROKER")
+    if broker == "" {
+        broker = "localhost:9092"
+    }
+
+    reader := kafka.NewReader(kafka.ReaderConfig{
+        Brokers: []string{broker},
+        Topic:   "orders.created",
+        GroupID: "order-processor-group",
+    })
 
 	log.Println("📡 Go microservice listening on topic orders.created...")
 

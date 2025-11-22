@@ -17,30 +17,34 @@ services:
       - zookeeper
     ports:
       - "9092:9092"
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
       KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
-  nest-api:
+  nest-orders:
     build:
-      context: ./nest-api
+      context: ./nest-orders
       dockerfile: Dockerfile
-    container_name: nest-api
+    container_name: nest-orders
     depends_on:
       - kafka
     environment:
-      KAFKA_BROKER: kafka:9092
+      KAFKA_BROKERS: kafka:9092
+      KAFKAJS_NO_PARTITIONER_WARNING: "1"
     ports:
       - "3000:3000"
 
-  go-processor:
+  order-processor:
     build:
-      context: ./go-processor
+      context: ./order-processor
       dockerfile: Dockerfile
-    container_name: go-processor
+    container_name: order-processor
     depends_on:
       - kafka
     environment:

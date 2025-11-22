@@ -1,18 +1,24 @@
 package kafka
 
 import (
-	"context"
-	"log"
+    "context"
+    "log"
+    "os"
 
-	"github.com/segmentio/kafka-go"
+    "github.com/segmentio/kafka-go"
 )
 
 func SendMessage(topic string, message []byte) error {
-	writer := &kafka.Writer{
-		Addr:     kafka.TCP("localhost:9092"),
-		Topic:    topic,
-		Balancer: &kafka.LeastBytes{},
-	}
+    broker := os.Getenv("KAFKA_BROKER")
+    if broker == "" {
+        broker = "localhost:9092"
+    }
+
+    writer := &kafka.Writer{
+        Addr:     kafka.TCP(broker),
+        Topic:    topic,
+        Balancer: &kafka.LeastBytes{},
+    }
 
 	err := writer.WriteMessages(context.Background(),
 		kafka.Message{

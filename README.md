@@ -62,3 +62,47 @@ Este proyecto demuestra una integración sencilla entre un API en NestJS que pub
 
 - En Windows, el formateo maneja finales de línea automáticamente (`endOfLine: auto`).
 - Si ejecutas todo dentro de Docker, ajusta las variables de entorno para apuntar a `kafka:9092` (ver `docker-compose.yml`).
+
+## Uso con Docker
+
+- Construir imágenes: `docker compose build`
+- Levantar servicios: `docker compose up -d`
+- Servicios:
+  - `zookeeper`: dependencia de Kafka
+  - `kafka`: listeners internos `kafka:9092` y host `localhost:29092`
+  - `nest-orders`: API HTTP en `http://localhost:3000`
+  - `order-processor`: binario Go que consume y publica eventos
+- Probar API:
+  - `curl http://localhost:3000/orders`
+  - `curl -X POST http://localhost:3000/orders -H "Content-Type: application/json" -d '{"orderId":"o-1","product":"book","quantity":2}'`
+- Ver logs:
+  - `docker compose logs --tail=100 nest-orders`
+  - `docker compose logs --tail=100 order-processor`
+
+## Conexiones y puertos
+
+- Dentro de contenedores: usa `kafka:9092`.
+- Desde el host: usa `localhost:29092` para Kafka.
+- API Nest: `http://localhost:3000`.
+
+## Variables de entorno en Docker
+
+- `nest-orders`:
+  - `KAFKA_BROKERS=kafka:9092`
+  - `KAFKAJS_NO_PARTITIONER_WARNING=1` (opcional)
+- `order-processor`:
+  - `KAFKA_BROKER=kafka:9092`
+
+## Uso local (sin Docker)
+
+- Kafka local escuchando en `localhost:9092`.
+- NestJS: `cd nest-orders && npm install && npm run start:dev`.
+- Go: `cd order-processor && go run main.go`.
+
+## Troubleshooting
+
+- `ECONNREFUSED`/`Connection timeout` al arrancar:
+  - Espera a que Kafka termine de iniciar; los servicios reintentan la conexión.
+  - Verifica `docker compose logs kafka` y que los listeners estén correctamente configurados.
+- Aviso particionador KafkaJS v2:
+  - El producer usa `Partitioners.DefaultPartitioner`; puedes silenciar con `KAFKAJS_NO_PARTITIONER_WARNING=1`.
