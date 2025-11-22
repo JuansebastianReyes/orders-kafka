@@ -1,0 +1,12 @@
+# Ignore Node.js artifacts
+**/node_modules/
+**/dist/
+**/.env
+
+# IDE/editor
+.vscode/
+.idea/
+
+# OS
+Thumbs.db
+.DS_Store
